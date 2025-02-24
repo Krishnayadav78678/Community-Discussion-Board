@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Room</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+</head>
+<body>
+    <h2>Welcome, {{ username }}! You are in Room: {{ room }}</h2>
+    
+    <div style="display: flex;">
+        <!-- Chat Box -->
+        <div style="width: 70%;">
+            <div id="chat-box" style="border:1px solid rgb(218, 28, 28);background-color: antiquewhite; border-radius:10px;box-shadow: 2px 2px 2px rgb(1, 10, 1); width:100%; height:300px; overflow:auto;"></div>
+            <input style="box-shadow: 2px 2px 2px rgb(1, 10, 1); " type="text" id="message" placeholder="Type a message">
+            <button style="margin-top: 10px;box-shadow: 2px 2px 2px rgb(1, 10, 1); " onclick="sendMessage()">Send</button>
+            <button style="box-shadow: 2px 2px 2px rgb(1, 10, 1); " onclick="leaveRoom()">Leave Room</button>
+        </div>
+
+        <!-- Active Users Box -->
+        <div style="width: 30%;height:280px; border: 1px solid rgb(21, 61, 223);background-color: antiquewhite;box-shadow: 2px 2px 2px rgb(1, 10, 1);border-radius: 10px; padding: 10px;">
+            <h3>Active Users</h3>
+            <ul id="user-list"></ul>
+        </div>
+    </div>
+
+    <script>
+        var socket = io();
+        var username = "{{ username }}";
+        var room = "{{ room }}";
+
+        if (!username || !room) {
+            window.location.href = "/chat";
+        }
+
+        // Join the room
+        socket.emit('join', {username: username, room: room});
+
+        // Listen for messages
+        socket.on('message', function(msg) {
+            var chatBox = document.getElementById('chat-box');
+            chatBox.innerHTML += '<p>' + msg + '</p>';
+        });
+
+        // Listen for active users update
+        socket.on('active_users', function(users) {
+            var userList = document.getElementById('user-list');
+            userList.innerHTML = "";
+            users.forEach(user => {
+                userList.innerHTML += '<li>' + user + '</li>';
+            });
+        });
+
+        function sendMessage() {
+            var message = document.getElementById('message').value;
+            if (message.trim() !== '') {
+                socket.emit('message', {username: username, message: message, room: room});
+                document.getElementById('message').value = '';  // Clear input field
+            }
+        }
+
+        function leaveRoom() {
+            socket.emit('leave', {username: username, room: room});
+            window.location.href = "/chat";
+        }
+    </script>
+</body>
+</html>

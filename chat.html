@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Chat Room</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+</head>
+<body>
+    <h2>Join a Chat Room</h2>
+    
+    <!-- Manual Room Entry -->
+    <form method="POST">
+        <label>Enter Room Name:</label>
+        <input type="text" name="room" required>
+        <button type="submit">Join</button>
+    </form>
+
+    <hr>
+
+    <!-- Dynamic List of Active Rooms -->
+    <h3>Active Rooms</h3>
+    <ul id="room-list">
+        <li>Loading...</li>
+    </ul>
+
+    <script>
+        var socket = io();
+
+        // Fetch active rooms
+        socket.on('update_rooms', function(rooms) {
+            var roomList = document.getElementById('room-list');
+            roomList.innerHTML = "";  // Clear previous list
+
+            if (Object.keys(rooms).length === 0) {
+                roomList.innerHTML = "<li>No active rooms</li>";
+            } else {
+                for (var room in rooms) {
+                    roomList.innerHTML += <li><a href="/chat_room?room=${room}">${room} (${rooms[room].length} users)</a></li>;
+                }
+            }
+        });
+
+        // Request active rooms on page load
+        socket.emit('get_active_rooms');
+    </script>
+</body>
+</html>

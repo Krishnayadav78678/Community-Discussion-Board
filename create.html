@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h2>Create a New Post</h2>
+        <form method="POST">
+            {{ form.hidden_tag() }}  <!-- CSRF token -->
+            <div class="mb-3">
+                {{ form.title.label(class="form-label") }}
+                {{ form.title(class="form-control") }}
+                {% if form.title.errors %}
+                    <div class="text-danger">
+                        {% for error in form.title.errors %}
+                            <small>{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="mb-3">
+                {{ form.content.label(class="form-label") }}
+                {{ form.content(class="form-control", rows=4) }}
+                {% if form.content.errors %}
+                    <div class="text-danger">
+                        {% for error in form.content.errors %}
+                            <small>{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <button type="submit" class="btn btn-primary">Post</button>
+        </form>
+
+        <hr>
+
+        <!-- Display Existing Posts with Delete Buttons -->
+        <h3>Your Posts</h3>
+        {% if posts %}
+            {% for post in posts %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ post.title }}</h5>
+                        <p class="card-text">{{ post.content }}</p>
+                        <small class="text-muted">
+                            Posted by {{ post.user.username }} on {{ post.date_posted.strftime('%Y-%m-%d %H:%M') }}
+                        </small>
+                        <br>
+                        <!-- Delete Button (Only show if the current user is the owner) -->
+                        {% if post.user_id == current_user.id %}
+                            <form action="{{ url_for('delete_post', post_id=post.id) }}" method="POST" style="display: inline;">
+                                <button type="submit" class="btn btn-danger btn-sm mt-2">Delete</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-center">No posts available.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
